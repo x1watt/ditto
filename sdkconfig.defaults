@@ -1,0 +1,34 @@
+# Target + flash/PSRAM for an N16R8-class ESP32-S3 board.
+CONFIG_IDF_TARGET="esp32s3"
+
+# 16MB flash
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# Octal PSRAM (N16R8). If your board is quad PSRAM, switch SPIRAM_MODE_QUAD.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_FETCH_INSTRUCTIONS=y
+CONFIG_SPIRAM_RODATA=y
+
+# TinyUSB: this app provides its own descriptors, so disable the default CDC.
+CONFIG_TINYUSB_HID_COUNT=1
+CONFIG_TINYUSB_CDC_ENABLED=n
+
+# HTTP server + headroom for larger URIs/headers (screenshots, file transfer).
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
+CONFIG_HTTPD_MAX_URI_LEN=512
+CONFIG_HTTPD_WS_SUPPORT=y
+
+# Give the main task a comfortable stack; HID/net run their own tasks.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=6144
+
+# NVS-backed Wi-Fi + config storage uses the default nvs partition.
+CONFIG_LWIP_IPV4=y
+
+# TinyUSB mass storage (milestone 2). BUFSIZE must be >= WL sector size (4096).
+CONFIG_TINYUSB_MSC_ENABLED=y
+CONFIG_TINYUSB_MSC_BUFSIZE=4096

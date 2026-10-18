@@ -1,0 +1,164 @@
+menu "Ditto configuration"
+
+    config DITTO_WIFI_SSID
+        string "Home Wi-Fi SSID"
+        default ""
+        help
+            SSID of the LAN Ditto joins. Stored to NVS on first boot; can be
+            re-provisioned later without reflashing.
+
+    config DITTO_WIFI_PASSWORD
+        string "Home Wi-Fi password"
+        default ""
+        help
+            WPA2 password for the above SSID.
+
+    config DITTO_HOSTNAME
+        string "mDNS hostname"
+        default "ditto"
+        help
+            Device is reachable at <hostname>.local on the LAN.
+
+    choice DITTO_MSC_BACKEND
+        prompt "USB mass-storage backend"
+        default DITTO_MSC_SPIFLASH
+        help
+            Backing store the target sees as a USB drive.
+
+        config DITTO_MSC_SPIFLASH
+            bool "Internal SPI-flash partition (no extra hardware)"
+            help
+                Uses the 'storage' FAT partition. ~1 MB, good for proving
+                enumeration and small file exchange with zero wiring.
+
+        config DITTO_MSC_SDMMC
+            bool "microSD card (SDMMC 1-line)"
+            help
+                Real capacity. Set the slot pins below for your board.
+    endchoice
+
+    if DITTO_MSC_SDMMC
+        config DITTO_SD_CLK_GPIO
+            int "SD CLK GPIO"
+            default 36
+        config DITTO_SD_CMD_GPIO
+            int "SD CMD GPIO"
+            default 35
+        config DITTO_SD_D0_GPIO
+            int "SD D0 GPIO"
+            default 37
+    endif
+
+    menu "Local TFT (LVGL status UI)"
+        config DITTO_TFT_ENABLE
+            bool "Enable local TFT status screen"
+            default y
+            help
+                ST7789 SPI panel driven by LVGL. Shows link/USB/disk state and a
+                loud ACTIVE banner while HID injection is happening.
+
+        if DITTO_TFT_ENABLE
+            config DITTO_TFT_SPI_HOST
+                int "SPI host (1=SPI2, 2=SPI3)"
+                default 1
+            config DITTO_TFT_SCLK_GPIO
+                int "TFT SCLK GPIO"
+                default 12
+            config DITTO_TFT_MOSI_GPIO
+                int "TFT MOSI GPIO"
+                default 11
+            config DITTO_TFT_CS_GPIO
+                int "TFT CS GPIO"
+                default 10
+            config DITTO_TFT_DC_GPIO
+                int "TFT DC GPIO"
+                default 9
+            config DITTO_TFT_RST_GPIO
+                int "TFT RST GPIO (-1 if tied to EN)"
+                default 14
+            config DITTO_TFT_BL_GPIO
+                int "TFT backlight GPIO (-1 if none)"
+                default 13
+            config DITTO_TFT_HRES
+                int "Panel width (px)"
+                default 240
+            config DITTO_TFT_VRES
+                int "Panel height (px)"
+                default 320
+            config DITTO_TFT_INVERT
+                bool "Invert panel colors"
+                default y
+                help
+                    ST7789 panels usually need color inversion on.
+        endif
+    endmenu
+
+    menu "HDMI capture (DVP + software JPEG)"
+        config DITTO_CAPTURE_ENABLE
+            bool "Enable HDMI capture pipeline"
+            default n
+            help
+                HDMI receiver (TC358743) parallel output -> S3 LCD_CAM (DVP) ->
+                software JPEG -> /screenshot. The S3 has no hardware JPEG, so this
+                is low-res / low-fps by design. Register setup for the receiver is
+                board-specific; see tc358743_configure() in capture.c.
+
+        if DITTO_CAPTURE_ENABLE
+            config DITTO_CAM_HRES
+                int "Capture width (px)"
+                default 640
+            config DITTO_CAM_VRES
+                int "Capture height (px)"
+                default 480
+            config DITTO_CAM_JPEG_QUALITY
+                int "JPEG quality (1-100)"
+                default 40
+            config DITTO_CAM_PCLK_GPIO
+                int "DVP PCLK GPIO"
+                default 13
+            config DITTO_CAM_VSYNC_GPIO
+                int "DVP VSYNC GPIO"
+                default 14
+            config DITTO_CAM_DE_GPIO
+                int "DVP DE (data enable) GPIO"
+                default 21
+            config DITTO_CAM_XCLK_GPIO
+                int "DVP XCLK out GPIO (-1 if receiver self-clocks)"
+                default -1
+            config DITTO_CAM_D0_GPIO
+                int "DVP D0 GPIO"
+                default 11
+            config DITTO_CAM_D1_GPIO
+                int "DVP D1 GPIO"
+                default 9
+            config DITTO_CAM_D2_GPIO
+                int "DVP D2 GPIO"
+                default 8
+            config DITTO_CAM_D3_GPIO
+                int "DVP D3 GPIO"
+                default 10
+            config DITTO_CAM_D4_GPIO
+                int "DVP D4 GPIO"
+                default 12
+            config DITTO_CAM_D5_GPIO
+                int "DVP D5 GPIO"
+                default 18
+            config DITTO_CAM_D6_GPIO
+                int "DVP D6 GPIO"
+                default 17
+            config DITTO_CAM_D7_GPIO
+                int "DVP D7 GPIO"
+                default 16
+            config DITTO_CAM_I2C_SDA_GPIO
+                int "Receiver I2C SDA GPIO"
+                default 4
+            config DITTO_CAM_I2C_SCL_GPIO
+                int "Receiver I2C SCL GPIO"
+                default 5
+            config DITTO_CAM_I2C_ADDR
+                hex "Receiver I2C 7-bit address"
+                default 0x0f
+        endif
+    endmenu
+
+endmenu

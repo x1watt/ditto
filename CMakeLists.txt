@@ -1,0 +1,4 @@
+# Ditto - ESP32-S3 USB HID/MSC + HDMI-capture KVM with LAN API
+cmake_minimum_required(VERSION 3.16)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(ditto)
